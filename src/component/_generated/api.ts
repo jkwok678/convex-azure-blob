@@ -8,9 +8,6 @@
  * @module
  */
 
-import type * as http from "../http.js";
-import type * as lib from "../lib.js";
-
 import type {
   ApiFromModules,
   FilterApi,
@@ -18,10 +15,7 @@ import type {
 } from "convex/server";
 import { anyApi, componentsGeneric } from "convex/server";
 
-const fullApi: ApiFromModules<{
-  http: typeof http;
-  lib: typeof lib;
-}> = anyApi as any;
+const fullApi: ApiFromModules<{}> = anyApi as any;
 
 /**
  * A utility for referencing Convex functions in your app's public API.
