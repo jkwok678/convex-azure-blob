@@ -22,4 +22,70 @@ import type { FunctionReference } from "convex/server";
  * ```
  */
 export type ComponentApi<Name extends string | undefined = string | undefined> =
-  {};
+  {
+    blobs: {
+      get: FunctionReference<
+        "query",
+        "internal",
+        { container: string; key: string },
+        {
+          container: string;
+          contentType?: string;
+          etag: string;
+          key: string;
+          lastModified: number;
+          size: number;
+        } | null,
+        Name
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        {
+          container: string;
+          paginationOpts: {
+            cursor: string | null;
+            endCursor?: string | null;
+            id?: number;
+            maximumBytesRead?: number;
+            maximumRowsRead?: number;
+            numItems: number;
+          };
+        },
+        {
+          continueCursor: string;
+          isDone: boolean;
+          page: Array<{
+            container: string;
+            contentType?: string;
+            etag: string;
+            key: string;
+            lastModified: number;
+            size: number;
+          }>;
+        },
+        Name
+      >;
+      remove: FunctionReference<
+        "mutation",
+        "internal",
+        { container: string; key: string },
+        boolean,
+        Name
+      >;
+      upsert: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          container: string;
+          contentType?: string;
+          etag: string;
+          key: string;
+          lastModified: number;
+          size: number;
+        },
+        null,
+        Name
+      >;
+    };
+  };
