@@ -4,7 +4,7 @@ import { convexTest } from "convex-test";
 import schema from "./schema.js";
 import component from "convex-azure-blob/test";
 
-const modules = import.meta.glob("./**/*.*s");
+const modules = import.meta.glob(["./**/*.*s", "!./**/*.test.*s"]);
 // When users want to write tests that use your component, they need to
 // explicitly register it with its schema and modules.
 export function initConvexTest() {

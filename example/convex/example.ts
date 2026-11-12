@@ -9,6 +9,7 @@ import {
   internalQuery,
   query,
 } from "./_generated/server.js";
+import type { QueryCtx } from "./_generated/server.js";
 import type { Auth } from "convex/server";
 
 // Reads AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_ACCOUNT_KEY and
@@ -106,14 +107,18 @@ export const deleteImage = action({
   },
 });
 
+async function findImage(ctx: QueryCtx, key: string) {
+  return await ctx.db
+    .query("images")
+    .withIndex("by_key", (q) => q.eq("key", key))
+    .unique();
+}
+
 export const ownerOf = internalQuery({
   args: { key: v.string() },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, args) => {
-    const image = await ctx.db
-      .query("images")
-      .withIndex("by_key", (q) => q.eq("key", args.key))
-      .unique();
+    const image = await findImage(ctx, args.key);
     return image?.owner ?? null;
   },
 });
@@ -131,10 +136,7 @@ export const removeImage = internalMutation({
   args: { key: v.string() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const image = await ctx.db
-      .query("images")
-      .withIndex("by_key", (q) => q.eq("key", args.key))
-      .unique();
+    const image = await findImage(ctx, args.key);
     if (image) await ctx.db.delete("images", image._id);
     return null;
   },
