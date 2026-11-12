@@ -1,5 +1,13 @@
-import { defineSchema } from "convex/server";
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
 
 export default defineSchema({
-  // Any tables used by the example app go here.
+  // Which user owns which blob. The component tracks the blobs themselves;
+  // the app decides who they belong to.
+  images: defineTable({
+    key: v.string(),
+    owner: v.string(),
+  })
+    .index("by_owner", ["owner"])
+    .index("by_key", ["key"]),
 });
