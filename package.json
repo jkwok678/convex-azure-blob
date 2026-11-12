@@ -10,7 +10,11 @@
   "license": "Apache-2.0",
   "keywords": [
     "convex",
-    "component"
+    "component",
+    "azure",
+    "azure-blob-storage",
+    "file-storage",
+    "uploads"
   ],
   "type": "module",
   "scripts": {
