@@ -10,6 +10,7 @@ explorations
 node_modules
 .eslintcache
 
-# npm pack output
+# pnpm pack output
 *.tgz
 *.tsbuildinfo
+.fallow/

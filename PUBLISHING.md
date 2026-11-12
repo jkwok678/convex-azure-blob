@@ -1,84 +1,61 @@
 # Publishing
 
-In order for other people to install and use this component, you can publish the
-package to npm.
+This package is published to npm with [pnpm](https://pnpm.io). You need an npmjs
+account with permission to publish `convex-azure-blob`; run `pnpm login` once to
+sign in.
 
-You will first need to have an npmjs account with permissions to push to your
-package name.
+## Before every release
 
-If this is your first time, here are the recommended steps:
+Add an entry for the new version to [CHANGELOG.md](./CHANGELOG.md) and commit
+it. The release scripts require a clean working tree.
 
-1. Ensure the package.json "name" matches what you want it to be called. It
-   should either be like `my-package` or `@my-org/my-package`. If it's the
-   latter, ensure you have an npmjs account with permissions to push to
-   `my-org`.
-2. `npm login` to login to npmjs.
-3. `npm run clean` to clean your `/dist` directory.
-4. `npm ci` to install the dependencies with the versions specified in
-   `package-lock.json`.
-5. `npm run build` to build the package fresh.
-6. (Optional) `npm run typecheck` to typecheck the package.
-7. (Optional) `npm run lint` to lint the package.
-8. (Optional) `npm run test` to test the package.
-9. (Optional) `npm pack` will create a .tgz file of the package. You can then
-   try installing it in another project with
-   `npm install ./path/to/your-package.tgz` to sanity check that it works as
-   expected. You can remove the .tgz file after.
-10. `npm publish --access public` to publish the package to npm.
-11. `git tag v0.1.0` to tag the new version.
-12. `git push --follow-tags` to push the tags to the repository. This way, other
-    contributors can always see what code was published with each version.
-    Running `npm version ...` will create these tags and commits automatically.
-
-After the initial publish, you can use the release scripts documented below,
-which will do steps 3-12 automatically (except the sanity check in step 9).
-
-## Package scripts for releasing
-
-In package.json, there are some scripts that are useful for doing releases.
-
-- `preversion` will run the tests and typecheck the code before marking a new
-  version.
-- `version` will open the changelog in vim and then save it before committing
-  the new version.
-- `prepublishOnly` will make a clean build of the package before publishing.
-
-These are not required and can be modified or removed if desired. They will all
-be run automatically when using one of the deployment commands.
-
-## Deploying a new alpha version
+## Alpha release
 
 ```sh
-npm run alpha
+pnpm run alpha
 ```
 
-This will create a prerelease version with an `@alpha` tag. It will then publish
-the package to npm and push the code and new tag. Users can install the package
-with `npm install @your-package@alpha`.
+This runs every check, bumps the version to the next prerelease (for example
+`0.1.1-alpha.0`), commits and tags it, publishes under the `alpha` tag, and
+pushes the commit and tag. Users install it with
+`npm install convex-azure-blob@alpha`.
 
-## Deploying a new release version
-
-```sh
-npm run release
-```
-
-This will create a patch version and publish as `latest`. It will then publish
-the package to npm and push the code and new tag. To publish a new minor or
-major version, you can run the commands manually:
+To publish an alpha of a specific version, set it explicitly instead:
 
 ```sh
-npm version minor # or major
-npm publish
+pnpm run release:check
+pnpm version 0.2.0-alpha.0
+pnpm publish --tag alpha
 git push --follow-tags
 ```
 
-## Building a one-off package
+## Release
 
 ```sh
-npm run clean
-npm run build
-npm pack
+pnpm run release
 ```
 
-You can then provide the .tgz file to others to install via
-`npm install ./path/to/your-package.tgz`.
+This runs every check, bumps the patch version, commits and tags it, publishes
+to npm, and pushes the commit and tag. For a minor or major release:
+
+```sh
+pnpm run release:check
+pnpm version minor # or major
+pnpm publish
+git push --follow-tags
+```
+
+## Trying a build before publishing
+
+```sh
+pnpm run build:clean
+pnpm pack
+```
+
+`pnpm pack` creates a `.tgz` file you can install in another project with
+`npm install ./path/to/convex-azure-blob-<version>.tgz`. Delete it afterwards.
+
+## What the checks cover
+
+`pnpm run release:check` installs from the lockfile, rebuilds from scratch, and
+runs the unit tests, the Azurite integration tests, lint and typecheck.

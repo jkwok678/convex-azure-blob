@@ -6,9 +6,9 @@ images, and delete them. See [convex/example.ts](./convex/example.ts).
 Run the example and convex commands from the root of the repo:
 
 ```sh
-npm i
-npm run dev            # Convex backend
-npm run dev:frontend   # Vite app, in another terminal
+pnpm install
+pnpm run dev            # Convex backend
+pnpm run dev:frontend   # Vite app, in another terminal
 ```
 
 ## Running against Azurite
@@ -20,7 +20,7 @@ dev dependency.
 1. Start Azurite:
 
    ```sh
-   npx azurite-blob --inMemoryPersistence
+   pnpm exec azurite-blob --inMemoryPersistence
    ```
 
 2. Create a container called `images` and add a CORS rule, using the
@@ -38,10 +38,10 @@ dev dependency.
 3. Point the Convex deployment at it:
 
    ```sh
-   npx convex env set AZURE_STORAGE_ACCOUNT devstoreaccount1
-   npx convex env set AZURE_STORAGE_ACCOUNT_KEY "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-   npx convex env set AZURE_STORAGE_CONTAINER images
-   npx convex env set AZURE_STORAGE_ENDPOINT http://127.0.0.1:10000/devstoreaccount1
+   pnpm exec convex env set AZURE_STORAGE_ACCOUNT devstoreaccount1
+   pnpm exec convex env set AZURE_STORAGE_ACCOUNT_KEY "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+   pnpm exec convex env set AZURE_STORAGE_CONTAINER images
+   pnpm exec convex env set AZURE_STORAGE_ENDPOINT http://127.0.0.1:10000/devstoreaccount1
    ```
 
 This only works with a local Convex deployment, since a cloud deployment cannot
