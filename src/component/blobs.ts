@@ -1,6 +1,7 @@
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server.js";
+import type { QueryCtx } from "./_generated/server.js";
 import type { Doc } from "./_generated/dataModel.js";
 import { blobFields } from "./schema.js";
 
@@ -12,17 +13,22 @@ function toBlob(doc: Doc<"blobs">) {
   return blob;
 }
 
+/** Finds the row for one blob, if it has been synced. */
+async function findBlob(ctx: QueryCtx, container: string, key: string) {
+  return await ctx.db
+    .query("blobs")
+    .withIndex("by_container_and_key", (q) =>
+      q.eq("container", container).eq("key", key),
+    )
+    .unique();
+}
+
 /** Records a blob's metadata, replacing any existing row for the same key. */
 export const upsert = mutation({
   args: blobFields,
   returns: v.null(),
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("blobs")
-      .withIndex("by_container_and_key", (q) =>
-        q.eq("container", args.container).eq("key", args.key),
-      )
-      .unique();
+    const existing = await findBlob(ctx, args.container, args.key);
     if (existing) {
       await ctx.db.replace("blobs", existing._id, args);
     } else {
@@ -37,12 +43,7 @@ export const get = query({
   args: { container: v.string(), key: v.string() },
   returns: v.union(blobValidator, v.null()),
   handler: async (ctx, args) => {
-    const doc = await ctx.db
-      .query("blobs")
-      .withIndex("by_container_and_key", (q) =>
-        q.eq("container", args.container).eq("key", args.key),
-      )
-      .unique();
+    const doc = await findBlob(ctx, args.container, args.key);
     return doc ? toBlob(doc) : null;
   },
 });
@@ -84,12 +85,7 @@ export const remove = mutation({
   args: { container: v.string(), key: v.string() },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("blobs")
-      .withIndex("by_container_and_key", (q) =>
-        q.eq("container", args.container).eq("key", args.key),
-      )
-      .unique();
+    const existing = await findBlob(ctx, args.container, args.key);
     if (!existing) return false;
     await ctx.db.delete("blobs", existing._id);
     return true;

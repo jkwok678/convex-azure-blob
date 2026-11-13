@@ -1,6 +1,6 @@
 /**
  * Runs the client against a real Azurite emulator, to check that Azure
- * accepts what we sign. Run with `npm run test:integration`.
+ * accepts what we sign. Run with `pnpm run test:integration`.
  */
 import { describe, expect, inject, test } from "vitest";
 import { defineTestApp } from "convex-test";

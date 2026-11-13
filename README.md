@@ -294,17 +294,17 @@ npx convex env set AZURE_STORAGE_ENDPOINT http://127.0.0.1:10000/devstoreaccount
 ## Development
 
 ```sh
-npm i
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
-`npm run dev` starts a file watcher that rebuilds the component, along with the
+`pnpm run dev` starts a file watcher that rebuilds the component, along with the
 [example app](./example)'s backend, which installs and uses the component. Run
-`npm run dev:frontend` to open the example in a Vite app. The example needs the
+`pnpm run dev:frontend` to open the example in a Vite app. The example needs the
 environment variables above; see [example/README.md](./example/README.md) to run
 it against Azurite.
 
 ```sh
-npm test                  # unit tests
-npm run test:integration  # tests against a local Azurite emulator
+pnpm test                  # unit tests
+pnpm run test:integration  # tests against a local Azurite emulator
 ```

@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  // The example app is a Vite app rooted in example/, which fallow does not
+  // discover from the repository root.
+  "supportEntry": ["example/src/main.tsx"],
+  // Convex generates these; their unused exports are not ours to remove.
+  "ignorePatterns": ["**/_generated/**"],
+  "health": {
+    // Long describe() blocks and test fakes are not production complexity.
+    "ignore": ["**/*.test.ts", "test/**"]
+  }
+}

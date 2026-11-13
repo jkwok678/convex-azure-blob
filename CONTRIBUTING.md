@@ -3,21 +3,26 @@
 ## Running locally
 
 ```sh
-npm i
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ## Testing
 
 ```sh
-npm ci
-npm run clean
-npm run typecheck
-npm run lint
-npm run test
-npm run test:integration
+pnpm install --frozen-lockfile
+pnpm run build:clean
+pnpm run typecheck
+pnpm run lint
+pnpm run fallow
+pnpm run test
+pnpm run test:integration
 ```
 
-`npm run test:integration` starts a local
+`pnpm run test:integration` starts a local
 [Azurite](https://github.com/Azure/Azurite) emulator and runs the client against
 it, to check that Azure accepts the URLs the component signs.
+
+`pnpm run fallow` runs [fallow](https://fallow.tools), which checks for unused
+code and dependencies, import cycles, duplicated code and overly complex
+functions. Its settings are in [.fallowrc.json](./.fallowrc.json).

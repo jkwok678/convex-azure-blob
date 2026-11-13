@@ -7,7 +7,10 @@ import {
 } from "convex/server";
 import schema from "./component/schema.js";
 import type { ComponentApi } from "./component/_generated/component.js";
-const modules = import.meta.glob("./component/**/*.ts");
+const modules = import.meta.glob([
+  "./component/**/*.ts",
+  "!./component/**/*.test.ts",
+]);
 
 /**
  * Register the component with the test convex instance.

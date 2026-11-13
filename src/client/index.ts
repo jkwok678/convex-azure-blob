@@ -63,25 +63,27 @@ export class AzureBlob {
    * that needs it, not module load (which would break `convex dev`).
    */
   private config(): Config {
-    const accountName =
-      this.options.accountName ?? process.env.AZURE_STORAGE_ACCOUNT;
-    const accountKey =
-      this.options.accountKey ?? process.env.AZURE_STORAGE_ACCOUNT_KEY;
-    const containerName =
-      this.options.containerName ?? process.env.AZURE_STORAGE_CONTAINER;
-    const endpoint =
-      this.options.endpoint ?? process.env.AZURE_STORAGE_ENDPOINT;
-    const missing = [
-      !accountName && "AZURE_STORAGE_ACCOUNT",
-      !accountKey && "AZURE_STORAGE_ACCOUNT_KEY",
-      !containerName && "AZURE_STORAGE_CONTAINER",
-    ].filter((name) => name !== false);
-    if (!accountName || !accountKey || !containerName) {
+    const { options } = this;
+    const settings = [
+      { envVar: "AZURE_STORAGE_ACCOUNT", option: options.accountName },
+      { envVar: "AZURE_STORAGE_ACCOUNT_KEY", option: options.accountKey },
+      { envVar: "AZURE_STORAGE_CONTAINER", option: options.containerName },
+    ].map(({ envVar, option }) => ({
+      envVar,
+      value: option ?? process.env[envVar] ?? "",
+    }));
+    const missing = settings.filter(({ value }) => !value);
+    if (missing.length > 0) {
+      const names = missing.map(({ envVar }) => envVar).join(", ");
       throw new Error(
-        `Azure Blob Storage is not configured. Set ${missing.join(", ")} ` +
+        `Azure Blob Storage is not configured. Set ${names} ` +
           "with `npx convex env set`, or pass the values to `new AzureBlob()`.",
       );
     }
+    const [accountName, accountKey, containerName] = settings.map(
+      ({ value }) => value,
+    );
+    const endpoint = options.endpoint ?? process.env.AZURE_STORAGE_ENDPOINT;
     return { accountName, accountKey, containerName, endpoint };
   }
 
@@ -255,31 +257,9 @@ export class AzureBlob {
    * The component cannot see who the user is, so every check is required.
    * Each should throw to deny the request.
    */
-  clientApi<DataModel extends GenericDataModel = GenericDataModel>(opts: {
-    /**
-     * Runs before an upload URL is issued and before an upload is synced.
-     */
-    checkUpload: (ctx: CheckCtx<DataModel>) => void | Promise<void>;
-    /** Runs before a blob's metadata is returned. */
-    checkRead: (ctx: CheckCtx<DataModel>, key: string) => void | Promise<void>;
-    /** Runs before a blob is deleted. */
-    checkDelete: (
-      ctx: CheckCtx<DataModel>,
-      key: string,
-    ) => void | Promise<void>;
-    /**
-     * Runs in an action once an upload's metadata is synced, exactly once per
-     * key. Use it to link the key to your own tables, via `ctx.runMutation`.
-     *
-     * An upload URL cannot restrict size or type, so validate `blob.size` and
-     * `blob.contentType` here. If this throws, the sync is undone; to reject
-     * an upload, call `deleteObject(ctx, blob.key)` and then throw.
-     */
-    onUpload?: (
-      ctx: GenericActionCtx<DataModel>,
-      blob: BlobMetadata,
-    ) => void | Promise<void>;
-  }) {
+  clientApi<DataModel extends GenericDataModel = GenericDataModel>(
+    opts: ClientApiOptions<DataModel>,
+  ) {
     return {
       generateUploadUrl: mutationGeneric({
         args: {},
@@ -347,6 +327,32 @@ function azureError(verb: string, key: string, response: Response): Error {
       (code ? ` ${code}` : ""),
   );
 }
+
+/** The auth checks and callbacks passed to `clientApi()`. */
+export type ClientApiOptions<
+  DataModel extends GenericDataModel = GenericDataModel,
+> = {
+  /**
+   * Runs before an upload URL is issued and before an upload is synced.
+   */
+  checkUpload: (ctx: CheckCtx<DataModel>) => void | Promise<void>;
+  /** Runs before a blob's metadata is returned. */
+  checkRead: (ctx: CheckCtx<DataModel>, key: string) => void | Promise<void>;
+  /** Runs before a blob is deleted. */
+  checkDelete: (ctx: CheckCtx<DataModel>, key: string) => void | Promise<void>;
+  /**
+   * Runs in an action once an upload's metadata is synced, exactly once per
+   * key. Use it to link the key to your own tables, via `ctx.runMutation`.
+   *
+   * An upload URL cannot restrict size or type, so validate `blob.size` and
+   * `blob.contentType` here. If this throws, the sync is undone; to reject
+   * an upload, call `deleteObject(ctx, blob.key)` and then throw.
+   */
+  onUpload?: (
+    ctx: GenericActionCtx<DataModel>,
+    blob: BlobMetadata,
+  ) => void | Promise<void>;
+};
 
 // Convenient types for `ctx` args, that only include the bare minimum.
 

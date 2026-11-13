@@ -20,12 +20,14 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function App() {
-  const images = useQuery(api.example.listImages);
+type ErrorProps = {
+  /** Shows an error, or clears it when passed null. */
+  setError: (error: unknown) => void;
+};
+
+function UploadButton({ setError }: ErrorProps) {
   const uploadFile = useUploadFile(api.example);
-  const deleteImage = useAction(api.example.deleteImage);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const input = event.target;
@@ -35,48 +37,63 @@ function App() {
     setUploading(true);
     try {
       await uploadFile(file);
-    } catch (e) {
-      setError(errorMessage(e));
+    } catch (error) {
+      setError(error);
     } finally {
       setUploading(false);
       input.value = "";
     }
   }
 
-  async function handleDelete(key: string) {
+  return (
+    <label className="upload">
+      {uploading ? "Uploading…" : "Upload an image"}
+      <input
+        type="file"
+        accept="image/*"
+        disabled={uploading}
+        onChange={handleFile}
+      />
+    </label>
+  );
+}
+
+function ImageList({ setError }: ErrorProps) {
+  const images = useQuery(api.example.listImages);
+  const deleteImage = useAction(api.example.deleteImage);
+
+  function handleDelete(key: string) {
     setError(null);
-    try {
-      await deleteImage({ key });
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+    deleteImage({ key }).catch(setError);
   }
+
+  if (images === undefined) return <p>Loading…</p>;
+  if (images.length === 0) return <p>No images yet.</p>;
+  return (
+    <ul className="images">
+      {images.map((image) => (
+        <li key={image.key}>
+          <img src={image.url} alt="" />
+          <span>{formatSize(image.size)}</span>
+          <button onClick={() => handleDelete(image.key)}>Delete</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function App() {
+  const [error, setErrorMessage] = useState<string | null>(null);
+  const setError = (e: unknown) =>
+    setErrorMessage(e === null ? null : errorMessage(e));
 
   return (
     <>
       <h1>Convex Azure Blob</h1>
       <div className="card">
-        <label className="upload">
-          {uploading ? "Uploading…" : "Upload an image"}
-          <input
-            type="file"
-            accept="image/*"
-            disabled={uploading}
-            onChange={handleFile}
-          />
-        </label>
+        <UploadButton setError={setError} />
         {error && <p className="error">{error}</p>}
-        {images === undefined && <p>Loading…</p>}
-        {images?.length === 0 && <p>No images yet.</p>}
-        <ul className="images">
-          {images?.map((image) => (
-            <li key={image.key}>
-              <img src={image.url} alt="" />
-              <span>{formatSize(image.size)}</span>
-              <button onClick={() => handleDelete(image.key)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+        <ImageList setError={setError} />
       </div>
     </>
   );
