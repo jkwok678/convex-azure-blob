@@ -1,6 +1,6 @@
 # Convex Azure Blob
 
-[![npm version](https://badge.fury.io/js/convex-azure-blob.svg)](https://badge.fury.io/js/convex-azure-blob)
+[![npm version](https://img.shields.io/npm/v/convex-azure-blob)](https://www.npmjs.com/package/convex-azure-blob)
 
 <!-- START: Include on https://convex.dev/components -->
 
