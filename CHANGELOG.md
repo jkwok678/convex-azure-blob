@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0
+## 0.1.1
 
 - Initial release.
 - Browser uploads straight to Azure Blob Storage through short-lived,
